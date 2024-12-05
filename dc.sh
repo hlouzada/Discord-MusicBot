@@ -6,7 +6,7 @@ if [ -f $BOT_ENV_PATH ]; then
   cp $BOT_ENV_PATH "docker/"
 else
     echo -e "\033[91mConfigure your bot .env properly!\033[0m"
-    exit 130
+    exit 0
 fi
 
 PROJECT_NAME=$(basename $(pwd) | tr '[:upper:]' '[:lower:]')
@@ -163,8 +163,8 @@ if [[ "$1" == "up" ]]; then
         cleanup_file_vars
     fi
 
-    echo -e "\033[95mExiting gracefully with code 130\033[0m"
-    exit 130
+    echo -e "\033[95mExiting gracefully\033[0m"
+    exit 0
 
 elif [[ "$1" == "lite" ]]; then
     shift
@@ -204,8 +204,8 @@ elif [[ "$1" == "lite" ]]; then
         cleanup_file_vars
     fi
 
-    echo -e "\033[95mExiting gracefully with code 130\033[0m"
-    exit 130
+    echo -e "\033[95mExiting gracefully\033[0m"
+    exit 0
 
 elif [[ "$1" == "enter" ]]; then
     shift
@@ -229,8 +229,8 @@ elif [[ "$1" == "enter" ]]; then
         # Additional option to enter the container's filesystem
         if [[ "$2" != "" && "$2" == "fs" ]]; then
             docker exec -it "${CONTAINER}" /bin/bash
-            echo -e "\033[95mExiting gracefully with code 130\033[0m"
-            exit 130
+            echo -e "\033[95mExiting gracefully\033[0m"
+            exit 0
         elif [[ "$2" != "" ]]; then
             echo -e "\033[91mInvalid option: $2\033[0m"
             exit 2
@@ -238,8 +238,8 @@ elif [[ "$1" == "enter" ]]; then
             # Enter the container's active process
             echo -e "\033[93;4mPress CTRL+P then CTRL+Q to detach from the container.\033[0m\n"
             docker attach ${CONTAINER}
-            echo -e "\033[95mExiting gracefully with code 130\033[0m"
-            exit 130
+            echo -e "\033[95mExiting gracefully\033[0m"
+            exit 0
         fi
     else
         echo -e "\033[93;4mPlease specify the container name:\033[0m"
@@ -263,8 +263,8 @@ elif [[ "$1" == "rebuild" ]]; then
     create_and_run --force-recreate
 
     cleanup_file_vars
-    echo -e "\033[95mExiting gracefully with code 130\033[0m"
-    exit 130
+    echo -e "\033[95mExiting gracefully\033[0m"
+    exit 0
 
 elif [[ "$1" == "down" ]]; then
 
@@ -318,8 +318,8 @@ elif [[ "$1" == "del" ]]; then
             echo -e "\033[93;4mContainer didn't exist, Image not deleted.\033[0m"
         fi
 
-        echo -e "\033[95mExiting gracefully with code 130\033[0m"
-        exit 130
+        echo -e "\033[95mExiting gracefully\033[0m"
+        exit 0
     else
         echo -e "\033[93;4mPlease specify the container name:\033[0m"
         echo -e "\n\t\033[4mAvailable containers:\033[24m"
