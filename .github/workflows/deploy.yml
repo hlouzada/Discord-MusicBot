@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:        
+  deploy:
+    runs-on: ubuntu-latest
+    enviroment: deploy
+    steps:
+      - name: Deploy to Digital Ocean droplet via SSH action
+        uses: appleboy/ssh-action@v0.1.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSHKEY }}
+          passphrase: ${{ secrets.PASSPHRASE }}
+          envs: GITHUB_SHA
+          script: |
+            cd ~/Discord-MusicBot
+            git fetch --all
+            git checkout $GITHUB_SHA
+            make down
+            make up nodb nofe
