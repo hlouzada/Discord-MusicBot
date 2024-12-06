@@ -1,5 +1,6 @@
 const { EmbedBuilder } = require("discord.js");
 const SlashCommand = require("../../lib/SlashCommand");
+const { getControlChannelMessage } = require("../../util/controlChannel");
 
 const command = new SlashCommand()
 	.setName("clean")
@@ -17,14 +18,15 @@ const command = new SlashCommand()
 		let number = interaction.options.getInteger("number");
 		number = number && number < 100? ++number : 100;
 		
-		
+		const controlChannelMessage = await getControlChannelMessage(interaction.guildId);
+
 		interaction.channel.messages.fetch({
 			limit: number,
 		}).then((messages) => {
-			const botMessages = [];
-			messages.filter(m => m.author.id === client.user.id).forEach(msg => botMessages.push(msg))
-			
-			botMessages.shift();
+			const botMessages = messages.filter(
+				m => m.author.id === client.user.id && (!controlChannelMessage || m.id !== controlChannelMessage.id)
+			);
+
 			interaction.channel.bulkDelete(botMessages, true)
 				.then(async deletedMessages => {
 					//Filtering out messages that did not get deleted.
