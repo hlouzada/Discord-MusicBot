@@ -1,6 +1,5 @@
 const { EmbedBuilder, Message } = require("discord.js");
 const Bot = require("../../lib/Bot");
-const { handleMessageCreate } = require("../../util/controlChannelEvents");
 
 // node_modules\discord.js\typings\index.d.ts:3940
 // @messageCreate: [message: Message];
@@ -38,5 +37,4 @@ module.exports = async (client, message) => {
 			.then((msg) => setTimeout(() => msg.delete(), timeout));
 	}
 
-	handleMessageCreate(message);
 };
