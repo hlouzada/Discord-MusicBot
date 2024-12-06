@@ -21,5 +21,3 @@ jobs:
             cd ~/Discord-MusicBot
             git fetch --all
             git checkout $GITHUB_SHA
-            make down
-            make up nodb nofe
