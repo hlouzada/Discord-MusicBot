@@ -170,13 +170,13 @@ const preventInteraction = async (interaction) => {
 
 	const controlChannelMessage = await getControlChannelMessage(interaction.guildId);
 
-	if (!controlChannelMessage || controlChannelMessage.channelId !== interaction.channelId)
+	if (!controlChannelMessage || controlChannelMessage.channelId === interaction.channelId)
 		return;
 
 	return interaction.reply({
 		embeds: [
 			redEmbed({
-				desc: "You can't run commands in dedicated Server Control Channel!",
+				desc: "You can't run commands outsude dedicated Server Control Channel!",
 			}),
 		],
 		ephemeral: true,
