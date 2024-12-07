@@ -1,6 +1,7 @@
 "use strict";
 
 const colors = require("colors");
+const { ActivityType } = require('discord.js')
 const { getClient } = require("../bot");
 const socket = require("../api/v1/dist/ws/eventsHandler");
 const {
@@ -58,6 +59,11 @@ function handleVoiceStateUpdate(oldState, newState) {
 
 function handleStop({ player }) {
 	socket.handleStop({ guildId: player.guild });
+
+	client.user.setActivity({
+		name: "Hentai",
+		type: ActivityType.Watching,
+	});
 }
 
 function handleQueueUpdate({ guildId, player }) {
@@ -104,6 +110,11 @@ function handleTrackStart({ player, track }) {
 
 	updateProgress({ player, track });
 
+	client.user.setActivity({
+		name: track.title,
+		type: ActivityType.Listening,
+	});
+
 	client.warn(
 		`Player: ${player.guild} | Track has started playing [${colors.blue(track.title)}]`
 	);
@@ -111,6 +122,11 @@ function handleTrackStart({ player, track }) {
 
 function handlePause({ player, state }) {
 	socket.handlePause({ guildId: player.guild, state });
+
+	client.user.setActivity({
+		name: "Nothing",
+		type: ActivityType.Listening,
+	});
 }
 
 module.exports = {

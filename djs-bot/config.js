@@ -136,29 +136,6 @@ module.exports = {
 		 * online, idle, dnd, invisible, ...
 		 * @type {import("discord.js").PresenceStatus} */
 		status: "online",
-
-		/**
-		 @type {{
-			name: string,
-			type: import("discord.js").ActivityType,
-			data?: (client: import("./lib/Bot")) => { [key: string]: any }
-		 }[]}
-		 */
-		activities: [
-			{
-				name: "{someVariable} servers",
-				type: "WATCHING",
-				data: (client) => {
-					return {
-						someVariable: client.guilds.cache.size,
-					}
-				}
-			},
-			{
-				name: "Music",
-				type: "LISTENING",
-			}
-		],
 	},
 
 	/** 
