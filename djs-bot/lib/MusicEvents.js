@@ -60,6 +60,8 @@ function handleVoiceStateUpdate(oldState, newState) {
 function handleStop({ player }) {
 	socket.handleStop({ guildId: player.guild });
 
+	const client = getClient();
+
 	client.user.setActivity({
 		name: "Hentai",
 		type: ActivityType.Watching,
@@ -122,6 +124,8 @@ function handleTrackStart({ player, track }) {
 
 function handlePause({ player, state }) {
 	socket.handlePause({ guildId: player.guild, state });
+
+	const client = getClient();
 
 	client.user.setActivity({
 		name: "Nothing",
