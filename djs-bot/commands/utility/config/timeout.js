@@ -33,8 +33,8 @@ module.exports = function timeout(baseCommand) {
 		async function (client, interaction, options) {
 			const guildId = interaction.guild.id;
 
-			let timeout = options.getInteger("timeout");
-			
+			let timeout = (options.getInteger("timeout") || 0) * 1000;
+
 			if (timeout && timeout < 1) {
 				return interaction.reply({
 					embeds: [
@@ -48,15 +48,18 @@ module.exports = function timeout(baseCommand) {
 
 			const is_reply = options.getString("option") === "reply";
 
-			if (is_reply)
-				setReplyDeleteTimeout(guildId, timeout || config.defaultConfig.replyDeleteTimeout);
-			else
-				setAutoLeaveTimeout(guildId, timeout || config.defaultConfig.autoLeaveTimeout);
+			if (is_reply) {
+				timeout = timeout || config.defaultConfig.replyDeleteTimeout;
+				setReplyDeleteTimeout(guildId, timeout);
+			} else {
+				timeout = timeout || config.defaultConfig.autoLeaveTimeout;
+				setAutoLeaveTimeout(guildId, timeout);
+			}
 
 			return interaction.reply({
 				embeds: [
 					client.greenEmbed({
-						desc: `${is_reply ? "Reply" : "Disconnect"} timeout set to ${timeout} seconds`,
+						desc: `${is_reply ? "Reply" : "Disconnect"} timeout set to ${timeout/1000} seconds`,
 					}),
 				],
 			});
