@@ -15,9 +15,9 @@ if (!schema || schema == "") throw new Error("Schema was not specified in the co
 if (!schemas.includes(schema)) throw new Error(`Schema "${schema}" does not exist`);
 console.log(`Using "${schema}" as the database schema`);
 
-function managePrisma(command) {
+function managePrisma(command, ...options) {
 	const cmd = "npx prisma",
-		  args = [command, `--schema=${path.join(__dirname, "..", "prisma", `${schema}.prisma`)}`, "--accept-data-loss"];
+		  args = [command, `--schema=${path.join(__dirname, "..", "prisma", `${schema}.prisma`)}`, ...options];
 	console.log(`Running command: ${cmd} ${args.join(" ")}`);
 	execSync(`${cmd} ${args.join(" ")}`);
 }
@@ -34,7 +34,7 @@ try {
 // push the schema to the database
 try {
 	console.log("Pushing schema to database...");
-	managePrisma("db push");
+	managePrisma("db push", "--accept-data-loss");
 } catch (error) {
 	console.error(error);
 	throw new Error("Error pushing schema to database");
