@@ -47,8 +47,8 @@ function updateProgress({ player, track }) {
 
 async function handleVoiceStateUpdate(oldState, newState) {
 	// if nobody left the channel in question, return.
-	if (oldState.channelId !== oldState.guild.me.voice.channelId || newState.channel)
-		return;
+	// if (oldState.channelId !== oldState.guild.me.voice.channelId || newState.channel)
+	// 	return;
 
 	if (!client.manager.Engine) return;
 
