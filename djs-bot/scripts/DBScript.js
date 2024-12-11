@@ -17,7 +17,7 @@ console.log(`Using "${schema}" as the database schema`);
 
 function managePrisma(command) {
 	const cmd = "npx prisma",
-		  args = [command, `--schema=${path.join(__dirname, "..", "prisma", `${schema}.prisma`)}`];
+		  args = [command, `--schema=${path.join(__dirname, "..", "prisma", `${schema}.prisma`)}`, "--accept-data-loss"];
 	console.log(`Running command: ${cmd} ${args.join(" ")}`);
 	execSync(`${cmd} ${args.join(" ")}`);
 }
