@@ -57,7 +57,9 @@ async function handleVoiceStateUpdate(oldState, newState) {
 
 	if (!player) return;
 
-	if (newState.channel?.members.size > 1 && oldState.channel.members.size === 1) {
+	if (!oldState.channel && !newState.channel) return;
+
+	if (!oldState.channel && player.voiceChannel.id === newState.channel.id && newState.channel.members.size === 2) {
 		if (player.autoPause && player.get("autoPauseSet") && player.paused) {
 			player.set("autoPauseSet", false);
 			player.pause(false);
@@ -73,7 +75,7 @@ async function handleVoiceStateUpdate(oldState, newState) {
 		return;
 	}
 
-	if (newState.channel?.members.size > 1) return;  // still someone in the channel
+	if (player.voiceChannel.id !== oldState.channel.id || oldState.channel.members.size > 2 || newState.channel) return;
 
 	if (player.twentyFourSeven) {
 		player.queue.clear();
