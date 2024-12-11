@@ -46,19 +46,20 @@ function updateProgress({ player, track }) {
 }
 
 async function handleVoiceStateUpdate(oldState, newState) {
-	// if nobody left the channel in question, return.
-	// if (oldState.channelId !== oldState.guild.me.voice.channelId || newState.channel)
-	// 	return;
+	const client = getClient();
+
+	//ignore if bot left the channel
+	if (oldState.id === client.user.id) return;
 
 	if (!client.manager.Engine) return;
 
-	const player = getClient().manager.Engine.players.get(oldState.guild.id);
+	const player = client.manager.Engine.players.get(oldState.guild.id);
 
 	if (!player) return;
 
 	if (newState.channel.members.size > 1 && oldState.channel.members.size === 1) {
 		if (player.autoPause && player.get("autoPauseSet") && player.paused) {
-			plater.set("autoPauseSet", false);
+			player.set("autoPauseSet", false);
 			player.pause(false);
 			handlePause({ player: player, state: false });
 		} else if (!player.autoPause && player.get("autoPauseSet") && player.paused) {
