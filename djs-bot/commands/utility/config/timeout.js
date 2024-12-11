@@ -11,33 +11,26 @@ module.exports = function timeout(baseCommand) {
 		command
 		.setName("timeout")
 		.setDescription("Set server timeout")
-		.addSubcommand((subcommand) =>
-			subcommand
-			.setName("reply")
-			.setDescription("Set reply timeout")
-			.addIntegerOption((opt) =>
-				opt
-				.setName("timeout")
-				.setDescription("Set reply timeout in seconds, leave empty to reset")
+		.addStringOption((opt) =>
+			opt
+			.setName("option")
+			.setDescription("Select reply or disconnect timeout")
+			.setRequired(true)
+			.addChoices(
+				{ name: "Reply", value: "reply" },
+				{ name: "Disconnect", value: "disconnect" },				
 			)
 		)
-		.addSubcommand((subcommand) =>
-			subcommand
-			.setName("disconnect")
-			.setDescription("Set disconnect timeout")
-			.addIntegerOption((opt) =>
-				opt
-				.setName("timeout")
-				.setDescription("Set disconnect timeout in seconds, leave empty to reset")
-			)
+		.addIntegerOption((opt) =>
+			opt
+			.setName("timeout")
+			.setDescription("Set timeout in seconds, leave empty to reset")
 		)
 	);
 
 	return baseCommand.setSubCommandHandler(
 		"timeout",
 		async function (client, interaction, options) {
-			const subcommand = options.getSubcommand();
-
 			const guildId = interaction.guild.id;
 
 			let timeout = options.getInteger("timeout");
@@ -53,7 +46,7 @@ module.exports = function timeout(baseCommand) {
 				});
 			}
 
-			const is_reply = subcommand === "reply";
+			const is_reply = options.getString("option") === "reply";
 
 			if (is_reply)
 				setReplyDeleteTimeout(guildId, timeout || config.defaultConfig.replyDeleteTimeout);
