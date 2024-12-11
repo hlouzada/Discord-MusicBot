@@ -1,6 +1,7 @@
 const SlashCommand = require("../../lib/SlashCommand");
 const { EmbedBuilder } = require("discord.js");
 const { removeTrack } = require("../../util/player");
+const { deleteMessageDelay } = require("../../util/message");
 
 const command = new SlashCommand()
 	.setName("remove")
@@ -27,6 +28,7 @@ const command = new SlashCommand()
 						.setColor("Red")
 						.setDescription("Lavalink node is not connected"),
 				],
+				ephemeral: true,
 			});
 		}
 
@@ -48,9 +50,11 @@ const command = new SlashCommand()
 			let thing = new EmbedBuilder()
 				.setColor(client.config.embedColor)
 				.setDescription(
-					`Current queue has only **${player.queue.size}** track`
+					`❌ | Current queue has only **${player.queue.size}** track`
 				);
-			return interaction.editReply({ embeds: [thing] });
+			const ret = interaction.editReply({ embeds: [thing] });
+			deleteMessageDelay(ret);
+			return ret;
 		}
 
 		removeTrack(player, position);
@@ -58,9 +62,11 @@ const command = new SlashCommand()
 		const number = position + 1;
 		let removeEmbed = new EmbedBuilder()
 			.setColor(client.config.embedColor)
-			.setDescription(`Removed track number **${number}** from queue`);
+			.setDescription(`✅ | Removed track number **${number}** from queue`);
 
-		return interaction.editReply({ embeds: [removeEmbed] });
+		const ret = interaction.editReply({ embeds: [removeEmbed] });
+		deleteMessageDelay(ret);
+		return ret;
 	});
 
 module.exports = command;

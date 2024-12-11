@@ -1,6 +1,7 @@
 const SlashCommand = require("../../lib/SlashCommand");
 const { EmbedBuilder } = require("discord.js");
 const { pause } = require("../../util/player");
+const { deleteMessageDelay } = require("../../util/message");
 
 const command = new SlashCommand()
 	.setName("pause")
@@ -21,6 +22,7 @@ const command = new SlashCommand()
 						.setColor("Red")
 						.setDescription("Lavalink node is not connected"),
 				],
+				ephemeral: true,
 			});
 		}
 		
@@ -36,25 +38,28 @@ const command = new SlashCommand()
 		}
 		
 		if (player.paused) {
-			return interaction.reply({
+			const ret = interaction.reply({
 				embeds: [
 					new EmbedBuilder()
-						.setColor("Red")
-						.setDescription("Current playing track is already paused!"),
+						.setColor(client.config.embedColor)
+						.setDescription("❌ | Current track is already paused!"),
 				],
-				ephemeral: true,
 			});
+			deleteMessageDelay(ret);
+			return ret;
 		}
-		
+
 		pause(player, true);
 
-		return interaction.reply({
+		const ret = interaction.reply({
 			embeds: [
 				new EmbedBuilder()
 					.setColor(client.config.embedColor)
-					.setDescription(`⏸ | **Paused!**`),
+					.setDescription(`⏯ **Paused!**`),
 			],
 		});
+		deleteMessageDelay(ret);
+		return ret;
 	});
 
 module.exports = command;

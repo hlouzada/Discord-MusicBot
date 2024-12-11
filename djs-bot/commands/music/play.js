@@ -3,6 +3,7 @@ const { EmbedBuilder } = require("discord.js");
 const { joinStageChannelRoutine, addTrack } = require("../../util/player");
 const { addQueueEmbed, loadedPlaylistEmbed, redEmbed } = require("../../util/embeds");
 const yt = require("youtube-sr").default;
+const { deleteMessageDelay } = require("../../util/message");
 
 async function testUrlRegex(string) {
 	return [
@@ -62,6 +63,7 @@ const command = new SlashCommand()
 							text: "Oops! something went wrong but it's not your fault!",
 						}),
 				],
+				ephemeral: true,
 			});
 		}
 
@@ -121,7 +123,7 @@ const command = new SlashCommand()
 				player.destroy();
 			}
 
-			await editReplyEmbed(redEmbed({ desc: "No results were found" }));
+			await editReplyEmbed(redEmbed({ desc: "❌ | No results were found!" }));
 		}
 
 		if (res.loadType === "TRACK_LOADED" || res.loadType === "SEARCH_RESULT") {
@@ -159,7 +161,7 @@ const command = new SlashCommand()
 			await editReplyEmbed(loadedPlaylistEmbed({ searchResult: res, query }));
 		}
 
-		if (ret) setTimeout(() => ret.delete().catch(client.warn), 20000);
+		deleteMessageDelay(ret);
 		return ret;
 	});
 

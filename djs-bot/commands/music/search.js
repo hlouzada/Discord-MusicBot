@@ -2,6 +2,7 @@ const SlashCommand = require("../../lib/SlashCommand");
 const prettyMilliseconds = require("pretty-ms");
 const { EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder } = require("discord.js");
 const { embedNoLLNode, redEmbed, colorEmbed } = require("../../util/embeds");
+const { deleteMessageDelay } = require("../../util/message");
 
 const command = new SlashCommand()
   .setName("search")
@@ -62,7 +63,17 @@ const command = new SlashCommand()
     }
 
     if (res.loadType == "NO_MATCHES") {
-      return sendRedEmbed(`No results found for \`${search}\``);
+      const ret = interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setColor(client.config.embedColor)
+            .setDescription(
+              `❌ | No results found for \`${search}\`. Please try again.`
+            ),
+        ],
+      });
+      deleteMessageDelay(ret);
+      return ret;
     } else {
       let max = 10;
       if (res.tracks.length < max) {
@@ -99,6 +110,8 @@ const command = new SlashCommand()
         ],
         components: [menus],
       });
+      deleteMessageDelay(choosenTracks);
+
       const filter = (button) => button.user.id === interaction.user.id;
 
       const tracksCollector = choosenTracks.createMessageComponentCollector({

@@ -1,5 +1,6 @@
 const SlashCommand = require("../../lib/SlashCommand");
 const { EmbedBuilder } = require("discord.js");
+const { deleteMessageDelay } = require("../../util/message");
 
 const command = new SlashCommand()
 	.setName("volume")
@@ -26,6 +27,7 @@ const command = new SlashCommand()
 						.setColor("Red")
 						.setDescription("Lavalink node is not connected"),
 				],
+				ephemeral: true,
 			});
 		}
 		
@@ -42,7 +44,7 @@ const command = new SlashCommand()
 		
 		let vol = interaction.options.getNumber("amount");
 		if (!vol || vol < 1 || vol > 125) {
-			return interaction.reply({
+			const ret = interaction.reply({
 				embeds: [
 					new EmbedBuilder()
 						.setColor(client.config.embedColor)
@@ -51,10 +53,12 @@ const command = new SlashCommand()
 						),
 				],
 			});
+			deleteMessageDelay(ret);
+			return ret;
 		}
 		
 		player.setVolume(vol);
-		return interaction.reply({
+		const ret = interaction.reply({
 			embeds: [
 				new EmbedBuilder()
 					.setColor(client.config.embedColor)
@@ -63,6 +67,8 @@ const command = new SlashCommand()
 					),
 			],
 		});
+		deleteMessageDelay(ret);
+		return ret;
 	});
 
 module.exports = command;

@@ -1,5 +1,6 @@
 const { EmbedBuilder } = require("discord.js");
 const SlashCommand = require("../../lib/SlashCommand");
+const { deleteMessageDelay } = require("../../util/message");
 
 //@TODO update this command to be compatible with cosmicord v1.1.0
 const command = new SlashCommand()
@@ -43,6 +44,7 @@ const command = new SlashCommand()
 						.setColor("Red")
 						.setDescription("Lavalink node is not connected"),
 				],
+				ephemeral: true,
 			});
 		}
 		
@@ -97,7 +99,9 @@ const command = new SlashCommand()
 			filtersEmbed.setDescription("❌ | Invalid filter!");
 		}
 		
-		return interaction.reply({ embeds: [filtersEmbed] });
+		const ret = interaction.reply({ embeds: [filtersEmbed] });
+		deleteMessageDelay(ret);
+		return ret;
 	});
 
 module.exports = command;

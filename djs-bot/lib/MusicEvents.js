@@ -10,6 +10,7 @@ const {
 	runIfNotControlChannel,
 } = require("../util/controlChannel");
 const { trackStartedEmbed } = require("../util/embeds");
+const { getAutoLeaveTimeout } = require("../util/musicManager");
 
 // entries in this map should be removed when bot disconnected from vc
 const progressUpdater = new Map();
@@ -44,17 +45,77 @@ function updateProgress({ player, track }) {
 	);
 }
 
-function handleVoiceStateUpdate(oldState, newState) {
-	// not leaving vc
-	if (newState.channelId) return;
+async function handleVoiceStateUpdate(oldState, newState) {
+	// if nobody left the channel in question, return.
+	if (oldState.channelId !== oldState.guild.me.voice.channelId || newState.channel)
+		return;
 
-	// not client user
-	if (newState.member.id !== newState.client.user.id) return;
+	if (!client.manager.Engine) return;
 
-	const gid = newState.guild.id;
+	const player = getClient().manager.Engine.players.get(oldState.guild.id);
 
-	stopProgressUpdater(gid);
-	socket.handleStop({ guildId: gid });
+	if (!player) return;
+
+	if (newState.channel.members.size > 1 && oldState.channel.members.size === 1) {
+		if (player.autoPause && player.get("autoPauseSet") && player.paused) {
+			plater.set("autoPauseSet", false);
+			player.pause(false);
+			handlePause({ player: player, state: false });
+		} else if (!player.autoPause && player.get("autoPauseSet") && player.paused) {
+			player.set("autoPauseSet", false);
+		}
+		const autoLeaveTimeout = player.get("autoLeaveTimeoutSet");
+		if (autoLeaveTimeout) {
+			clearTimeout(autoLeaveTimeout);
+			player.set("autoLeaveTimeoutSet", null);
+		}
+		return;
+	}
+
+	if (newState.channel.members.size > 1) return;  // still someone in the channel
+
+	if (player.twentyFourSeven) {
+		player.queue.clear();
+		player.stop();
+		player.set("autoQueue", false);
+		handleStop({ player });
+		triggerSocketQueueUpdate(player);
+		return;
+	}
+
+	if (player.autoLeave) {
+		player.destroy();
+		handleStop({ player });
+		triggerSocketQueueUpdate(player);
+		return;
+	}
+
+	if (player.autoPause && !player.paused) {
+		player.set("autoPauseSet", true);
+		player.pause(true);
+		handlePause({
+			player,
+			state,
+		});
+	}
+
+	const autoLeaveTimeout = setTimeout(() => {
+		if (player.twentyFourSeven) {
+			player.queue.clear();
+			player.stop();
+			player.set("autoQueue", false);
+			handleStop({ player });
+			triggerSocketQueueUpdate(player);
+			player.set("autoPauseSet", false);
+			player.set("autoLeaveTimeoutSet", null);
+		} else {
+			player.destroy();
+			handleStop({ player });
+			triggerSocketQueueUpdate(player);
+		}
+	}, await getAutoLeaveTimeout(oldState.guild.id));
+
+	player.set("autoLeaveTimeoutSet", autoLeaveTimeout);
 }
 
 function handleStop({ player }) {
@@ -104,7 +165,7 @@ function handleTrackStart({ player, track }) {
 
 	updateNowPlaying(player, track);
 	updateControlMessage(player.guild, track);
-	sendTrackHistory({ player, track });
+	// sendTrackHistory({ player, track });
 
 	socket.handleTrackStart({ player, track });
 	socket.handlePause({ guildId: player.guild, state: player.paused });

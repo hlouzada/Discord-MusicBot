@@ -1,6 +1,7 @@
 const SlashCommand = require("../../lib/SlashCommand");
 const { EmbedBuilder } = require("discord.js");
 const { spliceQueue } = require("../../util/player");
+const { deleteMessageDelay } = require("../../util/message");
 
 const command = new SlashCommand()
 	.setName("move")
@@ -34,6 +35,7 @@ const command = new SlashCommand()
 						.setColor("Red")
 						.setDescription("Lavalink node is not connected"),
 				],
+				ephemeral: true,
 			});
 		}
 
@@ -50,12 +52,16 @@ const command = new SlashCommand()
 
 		let trackNum = Number(track) - 1;
 		if (trackNum < 0 || trackNum > player.queue.length - 1) {
-			return interaction.reply(":x: | **Invalid track number**");
+			const ret = interaction.reply(":x: | **Invalid track number**");
+			deleteMessageDelay(ret);
+			return ret;
 		}
 
 		let dest = Number(position) - 1;
 		if (dest < 0 || dest > player.queue.length - 1) {
-			return interaction.reply(":x: | **Invalid position number**");
+			const ret = interaction.reply(":x: | **Invalid position number**");
+			deleteMessageDelay(ret);
+			return ret;
 		}
 
 		const thing = player.queue[trackNum];
@@ -63,13 +69,15 @@ const command = new SlashCommand()
 		spliceQueue(player, trackNum, 1);
 		spliceQueue(player, dest, 0, thing);
 
-		return interaction.reply({
+		const ret = interaction.reply({
 			embeds: [
 				new EmbedBuilder()
 					.setColor(client.config.embedColor)
 					.setDescription(":white_check_mark: | **Moved track**"),
 			],
 		});
+		deleteMessageDelay(ret);
+		return ret;
 	});
 
 module.exports = command;

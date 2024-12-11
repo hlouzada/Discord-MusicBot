@@ -1,6 +1,7 @@
 const colors = require("colors");
 const { EmbedBuilder } = require("discord.js");
 const SlashCommand = require("../../lib/SlashCommand");
+const { deleteMessageDelay } = require("../../util/message");
 
 const command = new SlashCommand()
   .setName("autoleave")
@@ -19,6 +20,7 @@ const command = new SlashCommand()
             .setColor("Red")
             .setDescription("Lavalink node is not connected"),
         ],
+        ephemeral: true,
       });
 
     if (!player) {
@@ -57,7 +59,7 @@ const command = new SlashCommand()
     );
 
     const ret = await interaction.reply({ embeds: [autoLeaveEmbed], fetchReply: true });
-    if (ret) setTimeout(() => ret.delete().catch(client.warn), 20000);
+    deleteMessageDelay(ret);
     return ret;
   });
 

@@ -148,6 +148,10 @@ module.exports = {
 		autoLeave: false,
 		autoPause: true,
 		autoQueue: false,
-		history: false,
+	},
+
+	defaultConfig: {
+		replyDeleteTimeout: 3600,  // 1 hour
+		autoLeaveTimeout: 300,  // 5 minutes
 	}
 };
