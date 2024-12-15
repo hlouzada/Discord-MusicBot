@@ -86,7 +86,8 @@ const command = new SlashCommand()
 				])
 				.setDescription(`[${title}](${song.uri})`)
 				.setImage("attachment://card.png");
-			return interaction.editReply({ embeds: [embed], files: [attachment] });
+			const ret = interaction.editReply({ embeds: [embed], files: [attachment] });
+			deleteMessageDelay(ret);
 		}
 
 		const queueGroups = load.chunk(queue, 10);
