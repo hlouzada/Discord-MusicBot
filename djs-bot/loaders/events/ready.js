@@ -1,6 +1,5 @@
-const { ActivityType } = require("discord.js");
-const { capitalize, format } = require("../../util/string");
 const Bot = require("../../lib/Bot");
+const { setActivityIdle } = require("../../util/status");
 // this fires once on the bot being launched, sets the presence for the bot
 
 /**
@@ -10,6 +9,8 @@ const Bot = require("../../lib/Bot");
 module.exports = (client) => {
 	clearTimeout(client.loginTimer);
 	client.loginTimer = null;
+
+	setActivityIdle(client);
 
 	// Express API
 	client.api.listen({ host: "0.0.0.0", port: client.config.api.port }, (err, address) => {

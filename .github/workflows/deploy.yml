@@ -21,3 +21,5 @@ jobs:
             cd ~/Discord-MusicBot
             git fetch --all
             git checkout $GITHUB_SHA
+            ./dc.sh down
+            ./dc.sh up nofe

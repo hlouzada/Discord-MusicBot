@@ -11,6 +11,7 @@ const {
 } = require("../util/controlChannel");
 const { trackStartedEmbed } = require("../util/embeds");
 const { getAutoLeaveTimeout } = require("../util/musicManager");
+const { setActivityIdle } = require("../util/status");
 
 // entries in this map should be removed when bot disconnected from vc
 const progressUpdater = new Map();
@@ -133,10 +134,7 @@ function handleStop({ player }) {
 
 	const client = getClient();
 
-	client.user.setActivity({
-		name: "Hentai",
-		type: ActivityType.Watching,
-	});
+	setActivityIdle(client);
 }
 
 function handleQueueUpdate({ guildId, player }) {
