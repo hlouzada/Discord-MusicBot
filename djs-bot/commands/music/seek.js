@@ -1,6 +1,7 @@
 const SlashCommand = require("../../lib/SlashCommand");
 const { EmbedBuilder } = require("discord.js");
 const ms = require("ms");
+const { deleteMessageDelay } = require("../../util/message");
 
 const command = new SlashCommand()
 	.setName("seek")
@@ -27,6 +28,7 @@ const command = new SlashCommand()
 						.setColor("Red")
 						.setDescription("Lavalink node is not connected"),
 				],
+				ephemeral: true,
 			});
 		}
 		
@@ -55,7 +57,7 @@ const command = new SlashCommand()
 		
 		if (time <= duration) {
 			player.seek(time);
-			return interaction.editReply({
+			const ret = interaction.editReply({
 				embeds: [
 					new EmbedBuilder()
 						.setColor(client.config.embedColor)
@@ -66,16 +68,20 @@ const command = new SlashCommand()
 						),
 				],
 			});
+			deleteMessageDelay(ret);
+			return ret;
 		} else {
-			return interaction.editReply({
+			const ret = interaction.editReply({
 				embeds: [
 					new EmbedBuilder()
 						.setColor(client.config.embedColor)
 						.setDescription(
-							`Unable to seek current playing track. This may be due to exceeding track duration or an incorrect time format. Please check and try again`,
+							`❌ | Unable to seek current playing track. This may be due to exceeding track duration or an incorrect time format. Please check and try again`,
 						),
 				],
 			});
+			deleteMessageDelay(ret);
+			return ret;
 		}
 	});
 

@@ -2,6 +2,7 @@ const SlashCommand = require("../../lib/SlashCommand");
 const { EmbedBuilder } = require("discord.js");
 const playerUtil = require("../../util/player");
 const { redEmbed } = require("../../util/embeds");
+const { deleteMessageDelay } = require("../../util/message");
 
 const command = new SlashCommand()
 	.setName("skip")
@@ -22,6 +23,7 @@ const command = new SlashCommand()
 						.setColor("Red")
 						.setDescription("Lavalink node is not connected"),
 				],
+				ephemeral: true,
 			});
 		}
 
@@ -41,13 +43,17 @@ const command = new SlashCommand()
 		const status = playerUtil.skip(player);
 
 		if (status === 1) {
-			return interaction.reply({
+			const ret = interaction.reply({
 				embeds: [
-					redEmbed({
-						desc: `There is nothing after [${song.title}](${song.uri}) in the queue.`
-					}),
+					new EmbedBuilder()
+						.setColor(client.config.embedColor)
+						.setDescription(
+							`❌ | There is nothing after [${song.title}](${song.uri}) in the queue.`,
+						),
 				],
 			});
+			deleteMessageDelay(ret);
+			return ret;
 		}
 
 		const ret = await interaction.reply({
@@ -58,7 +64,7 @@ const command = new SlashCommand()
 			],
 		 	fetchReply: true 
 		});
-		if (ret) setTimeout(() => ret.delete().catch(client.warn), 20000);
+		deleteMessageDelay(ret);
 		return ret;
 	});
 

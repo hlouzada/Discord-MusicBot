@@ -1,5 +1,6 @@
 const SlashCommand = require("../../lib/SlashCommand");
 const { EmbedBuilder } = require("discord.js");
+const { deleteMessageDelay } = require("../../util/message");
 
 const command = new SlashCommand()
 	.setName("summon")
@@ -30,11 +31,13 @@ const command = new SlashCommand()
 			player.connect();
 		}
 		
-		interaction.reply({
+		const ret = interaction.reply({
 			embeds: [
 				new EmbedBuilder().setDescription(`:thumbsup: | **Successfully joined <#${ channel.id }>!**`),
 			],
 		});
+		deleteMessageDelay(ret);
+		return ret;
 	});
 
 module.exports = command;

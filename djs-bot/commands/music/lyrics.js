@@ -8,6 +8,7 @@ const {
 } = require("discord.js");
 const { Rlyrics } = require("rlyrics");
 const lyricsApi = new Rlyrics();
+const { deleteMessageDelay } = require("../../util/message");
 
 const command = new SlashCommand()
 	.setName("lyrics")
@@ -19,7 +20,7 @@ const command = new SlashCommand()
 			.setRequired(false),
 	)
 	.setRun(async (client, interaction, options) => {
-		await interaction.reply({
+		const ret = await interaction.reply({
 			embeds: [
 				new EmbedBuilder()
 					.setColor(client.config.embedColor)
@@ -31,6 +32,7 @@ const command = new SlashCommand()
 		if (client.manager.Engine) {
 			player = client.manager.Engine.players.get(interaction.guild.id);
 		} else {
+			deleteMessageDelay(ret);
 			return interaction.editReply({
 				embeds: [
 					new EmbedBuilder()
@@ -42,6 +44,7 @@ const command = new SlashCommand()
 
 		const args = interaction.options.getString("song");
 		if (!args && !player) {
+			deleteMessageDelay(ret);
 			return interaction.editReply({
 				embeds: [
 					new EmbedBuilder()
@@ -190,6 +193,7 @@ const command = new SlashCommand()
 			}
 		}).catch((err) => {
 			console.error(err);
+			deleteMessageDelay(ret);
 			return interaction.editReply({
 				embeds: [
 					new EmbedBuilder()
@@ -223,6 +227,7 @@ const command = new SlashCommand()
 				});
 			};
 		});
+		deleteMessageDelay(ret);
 	});
 
 module.exports = command;

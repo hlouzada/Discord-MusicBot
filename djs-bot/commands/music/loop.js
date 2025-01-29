@@ -1,5 +1,6 @@
 const SlashCommand = require("../../lib/SlashCommand");
 const { EmbedBuilder } = require("discord.js");
+const { deleteMessageDelay } = require("../../util/message");
 
 const command = new SlashCommand()
 	.setName("loop")
@@ -20,6 +21,7 @@ const command = new SlashCommand()
 						.setColor("Red")
 						.setDescription("Lavalink node is not connected"),
 				],
+				ephemeral: true,
 			});
 		}
 		
@@ -34,18 +36,18 @@ const command = new SlashCommand()
 			});
 		}
 		
-		if (player.setTrackRepeat(!player.trackRepeat)) {
-			;
-		}
+		player.setTrackRepeat(!player.trackRepeat);
 		const trackRepeat = player.trackRepeat? "enabled" : "disabled";
 		
-		interaction.reply({
+		const ret = interaction.reply({
 			embeds: [
 				new EmbedBuilder()
 					.setColor(client.config.embedColor)
 					.setDescription(`👍 | **Loop has been \`${ trackRepeat }\`**`),
 			],
 		});
+		deleteMessageDelay(ret);
+		return ret;
 	});
 
 module.exports = command;

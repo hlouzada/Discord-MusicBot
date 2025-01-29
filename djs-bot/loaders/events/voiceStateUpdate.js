@@ -1,5 +1,5 @@
 const musicEvents = require("../../lib/MusicEvents");
 
-module.exports = (client, oldState, newState) => {
-	musicEvents.handleVoiceStateUpdate(oldState, newState);
+module.exports = async (client, oldState, newState) => {
+	await musicEvents.handleVoiceStateUpdate(oldState, newState);
 };

@@ -47,6 +47,8 @@ model Guild {
   createdAt                DateTime   @default(now())
   updatedAt                DateTime   @updatedAt
   guildId                  String     @unique
+  replyDeleteTimeout       Int?
+  autoLeaveTimeout         Int?
   DJRole                   String?
   controlChannelId         String?
   controlChannelMessageId  String?

@@ -14,6 +14,7 @@ const { updateControlMessage } = require("../../util/controlChannel");
 const { handleTrackStart } = require("../MusicEvents");
 const { pause } = require("../../util/player");
 const { setDefaultPlayerConfig } = require("../../util/musicManager");
+const { deleteMessageDelay } = require("../../util/message");
 
 Structure.extend(
 	"Player",
@@ -243,7 +244,7 @@ module.exports = (client) => {
 						],
 					}).catch(client.warn);
 
-					setTimeout(() => msg?.delete().catch(client.warn), 20000);
+					deleteMessageDelay(msg);
 				}
 				return player.destroy();
 			} else {
@@ -318,7 +319,7 @@ module.exports = (client) => {
 					.get(player.textChannel)
 					.send({ embeds: [queueEmbed] }).catch(client.warn);
 
-				setTimeout(() => msg?.delete().catch(client.warn), 20000);
+				deleteMessageDelay(msg);
 
 				try {
 					if (!player.playing && !twentyFourSeven) {
@@ -338,7 +339,7 @@ module.exports = (client) => {
 								const msg = await client.channels.cache.get(player.textChannel)
 									.send(payload).catch(client.warn);
 
-								setTimeout(() => msg?.delete().catch(client.warn), 20000);
+								deleteMessageDelay(msg);
 
 								player.destroy();
 							} else if (player.playing) {

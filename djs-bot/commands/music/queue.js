@@ -5,6 +5,7 @@ const pms = require("pretty-ms");
 const createCard = require("songcard");
 const path = require("path");
 const { getButtons } = require("../../util/embeds");
+const { deleteMessageDelay } = require("../../util/message");
 
 const command = new SlashCommand()
 	.setName("queue")
@@ -26,6 +27,7 @@ const command = new SlashCommand()
 						.setColor("Red")
 						.setDescription("Lavalink node is not connected"),
 				],
+				ephemeral: true,
 			});
 		}
 
@@ -84,7 +86,8 @@ const command = new SlashCommand()
 				])
 				.setDescription(`[${title}](${song.uri})`)
 				.setImage("attachment://card.png");
-			return interaction.editReply({ embeds: [embed], files: [attachment] });
+			const ret = interaction.editReply({ embeds: [embed], files: [attachment] });
+			deleteMessageDelay(ret);
 		}
 
 		const queueGroups = load.chunk(queue, 10);
@@ -147,6 +150,8 @@ const command = new SlashCommand()
 				getButtons(currentPage, maxPage)
 			],
 		});
+
+		deleteMessageDelay(queueMessage);
 
 		const filter = (i) => i.user.id === interaction.user.id;
 		const collector = queueMessage.createMessageComponentCollector({

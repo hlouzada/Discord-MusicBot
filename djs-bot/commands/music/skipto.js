@@ -1,6 +1,8 @@
 const SlashCommand = require("../../lib/SlashCommand");
 const { EmbedBuilder } = require("discord.js");
 const { removeTrack } = require("../../util/player");
+const { deleteMessageDelay } = require("../../util/message");
+
 
 const command = new SlashCommand()
 	.setName("skipto")
@@ -31,6 +33,7 @@ const command = new SlashCommand()
 						.setColor("Red")
 						.setDescription("Lavalink node is not connected"),
 				],
+				ephemeral: true,
 			});
 		}
 
@@ -51,25 +54,29 @@ const command = new SlashCommand()
 
 		try {
 			if (!position || position < 0 || position > player.queue.size) {
-				let thing = new EmbedBuilder()
+				const thing = new EmbedBuilder()
 					.setColor(client.config.embedColor)
 					.setDescription("❌ | Invalid position!");
-				return interaction.editReply({ embeds: [thing] });
+				const ret = interaction.editReply({ embeds: [thing] });
+				deleteMessageDelay(ret);
+				return ret;
 			}
 
 			removeTrack(player, 0, position - 1);
 			player.stop();
 
-			let thing = new EmbedBuilder()
+			const thing = new EmbedBuilder()
 				.setColor(client.config.embedColor)
 				.setDescription("✅ | Skipped to position " + position);
 
-			return interaction.editReply({ embeds: [thing] });
+			const ret = interaction.editReply({ embeds: [thing] });
+			deleteMessageDelay(ret);
+			return ret;
 		} catch {
 			if (position === 1) {
 				player.stop();
 			}
-			return interaction.editReply({
+			const ret = interaction.editReply({
 				embeds: [
 					new EmbedBuilder()
 						.setColor(client.config.embedColor)
@@ -78,6 +85,8 @@ const command = new SlashCommand()
 						),
 				],
 			});
+			deleteMessageDelay(ret);
+			return ret;
 		}
 	});
 

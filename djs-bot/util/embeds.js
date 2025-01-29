@@ -173,7 +173,6 @@ const controlChannelMessage = ({ guildId, track } = {}) => {
 	const components = [firstRow, secondRow];
 
 	return {
-		content: "Join a voice channel and queue songs by name or url in here.",
 		embeds: [trackStartedEmbed({ track, player })],
 		components,
 	};

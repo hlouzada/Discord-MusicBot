@@ -10,6 +10,7 @@ const {
 	runIfNotControlChannel,
 } = require("../util/controlChannel");
 const { trackStartedEmbed } = require("../util/embeds");
+const { getAutoLeaveTimeout } = require("../util/musicManager");
 
 // entries in this map should be removed when bot disconnected from vc
 const progressUpdater = new Map();
@@ -44,17 +45,87 @@ function updateProgress({ player, track }) {
 	);
 }
 
-function handleVoiceStateUpdate(oldState, newState) {
-	// not leaving vc
-	if (newState.channelId) return;
+async function handleVoiceStateUpdate(oldState, newState) {
+    const client = getClient();
 
-	// not client user
-	if (newState.member.id !== newState.client.user.id) return;
+    // Ignore if the voice state update is for the bot itself
+    if (oldState.id === client.user.id) return;
 
-	const gid = newState.guild.id;
+    const manager = client.manager.Engine;
+    if (!manager) return;
 
-	stopProgressUpdater(gid);
-	socket.handleStop({ guildId: gid });
+    // Get the player for this guild using oldState or newState guild info
+    const guildId = oldState.guild.id || newState.guild.id;
+    const player = manager.players.get(guildId);
+    if (!player) return;
+
+    // If neither oldState nor newState has a channel, no change relevant to playback
+    if (!oldState.channel && !newState.channel) return;
+
+    // --- USER JOINS CHANNEL ---
+    // If a user joined the bot's voice channel and now there's exactly 2 members (bot + user)
+    if (!oldState.channel 
+        && player.voiceChannel === newState.channel.id 
+        && newState.channel.members.size === 2) {
+        
+        // If previously auto-paused, resume playback
+        if (player.autoPause && player.get("autoPauseSet") && player.paused) {
+            player.set("autoPauseSet", false);
+            player.pause(false);
+            handlePause({ player: player, state: false });
+        } else if (!player.autoPause && player.get("autoPauseSet") && player.paused) {
+            player.set("autoPauseSet", false);
+        }
+
+        // Clear any auto-leave timeout since a user returned
+        const autoLeaveTimeout = player.get("autoLeaveTimeoutSet");
+        if (autoLeaveTimeout) {
+            clearTimeout(autoLeaveTimeout);
+            player.set("autoLeaveTimeoutSet", null);
+        }
+        return;
+    }
+
+    // --- USER LEAVES OR MOVES CHANNEL ---
+    // If the user that caused the update was in the same channel as the player and now left or moved:
+    // First, ensure we're dealing with the bot's actual voice channel
+    const voiceChannel = oldState.guild.channels.cache.get(player.voiceChannel);
+    if (!voiceChannel) return;
+
+    // If the user left or moved and now the channel size is 1 (just the bot)
+    // This is where we consider autopause or auto-leave conditions
+    if (voiceChannel.members.size === 1) {
+        // If autopause is enabled and the player isn't paused yet, pause it
+        if (player.autoPause && !player.paused) {
+            player.set("autoPauseSet", true);
+            player.pause(true);
+            handlePause({ player, state: true });
+        } else if (player.autoLeave) {
+			player.destroy();
+			handleStop({ player });
+			triggerSocketQueueUpdate(player);
+			return;  // No need to set up auto-leave timeout if auto-leave is enabled
+		}
+
+        // Set up an auto-leave timeout if configured
+        const autoLeaveTimeout = setTimeout(async () => {
+            if (player.twentyFourSeven) {
+                player.queue.clear();
+                player.stop();
+                player.set("autoQueue", false);
+                handleStop({ player });
+                triggerSocketQueueUpdate(player);
+                player.set("autoPauseSet", false);
+                player.set("autoLeaveTimeoutSet", null);
+            } else {
+                player.destroy();
+                handleStop({ player });
+                triggerSocketQueueUpdate(player);
+            }
+        }, await getAutoLeaveTimeout(guildId));
+
+        player.set("autoLeaveTimeoutSet", autoLeaveTimeout);
+    }
 }
 
 function handleStop({ player }) {
@@ -104,7 +175,7 @@ function handleTrackStart({ player, track }) {
 
 	updateNowPlaying(player, track);
 	updateControlMessage(player.guild, track);
-	sendTrackHistory({ player, track });
+	// sendTrackHistory({ player, track });
 
 	socket.handleTrackStart({ player, track });
 	socket.handlePause({ guildId: player.guild, state: player.paused });

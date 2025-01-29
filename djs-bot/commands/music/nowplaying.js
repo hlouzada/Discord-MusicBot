@@ -2,6 +2,7 @@ const { EmbedBuilder, escapeMarkdown, AttachmentBuilder } = require("discord.js"
 const SlashCommand = require("../../lib/SlashCommand");
 const createCard = require("songcard");
 const path = require("path");
+const { deleteMessageDelay } = require("../../util/message");
 
 const command = new SlashCommand()
 	.setName("nowplaying")
@@ -22,6 +23,7 @@ const command = new SlashCommand()
 						.setColor("Red")
 						.setDescription("Lavalink node is not connected"),
 				],
+				ephemeral: true,
 			});
 		}
 
@@ -77,6 +79,8 @@ const command = new SlashCommand()
 			])
 			.setDescription(`[${title}](${song.uri})`)
 			.setImage("attachment://card.png");
-		return interaction.reply({ embeds: [embed], files: [attachment] });
+		const ret = interaction.reply({ embeds: [embed], files: [attachment] });
+		deleteMessageDelay(ret);
+		return ret;
 	});
 module.exports = command;

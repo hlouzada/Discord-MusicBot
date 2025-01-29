@@ -1,6 +1,7 @@
 const SlashCommand = require("../../lib/SlashCommand");
 const { EmbedBuilder } = require("discord.js");
 const { clearQueue } = require("../../util/player");
+const { deleteMessageDelay } = require("../../util/message");
 
 const command = new SlashCommand()
 	.setName("clear")
@@ -42,7 +43,9 @@ const command = new SlashCommand()
 					"❌ | **Invalid, Not enough track to be cleared.**"
 				);
 
-			return interaction.reply({ embeds: [cembed], ephemeral: true });
+			const ret = interaction.reply({ embeds: [cembed], ephemeral: true });
+			deleteMessageDelay(ret);
+			return ret;
 		}
 
 		clearQueue(player);
@@ -51,7 +54,9 @@ const command = new SlashCommand()
 			.setColor(client.config.embedColor)
 			.setDescription(`✅ | **Cleared the queue!**`);
 
-		return interaction.reply({ embeds: [clearEmbed] });
+		const ret = interaction.reply({ embeds: [clearEmbed] });
+		deleteMessageDelay(ret);
+		return ret;
 	});
 
 module.exports = command;

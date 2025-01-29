@@ -39,11 +39,6 @@ const command = new SlashCommand()
 							await msg.delete();
 						}
 					}
-					
-					await interaction.editReply({ embeds: [new EmbedBuilder().setDescription(`:white_check_mark: | Deleted ${ botMessages.length } bot messages`)] });
-					setTimeout(() => {
-						interaction.deleteReply();
-					}, 5000);
 				})
 			
 		});

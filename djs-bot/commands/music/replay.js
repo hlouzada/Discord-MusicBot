@@ -1,5 +1,6 @@
 const SlashCommand = require("../../lib/SlashCommand");
 const { EmbedBuilder } = require("discord.js");
+const { deleteMessageDelay } = require("../../util/message");
 
 const command = new SlashCommand()
 	.setName("replay")
@@ -20,6 +21,7 @@ const command = new SlashCommand()
 						.setColor("Red")
 						.setDescription("Lavalink node is not connected"),
 				],
+				ephemeral: true,
 			});
 		}
 		
@@ -39,13 +41,15 @@ const command = new SlashCommand()
 		player.seek(0);
 		
 		let song = player.queue.current;
-		return interaction.editReply({
+		const ret = interaction.editReply({
 			embeds: [
 				new EmbedBuilder()
 					.setColor(client.config.embedColor)
 					.setDescription(`Replay [${ song.title }](${ song.uri })`),
 			],
 		});
+		deleteMessageDelay(ret);
+		return ret;
 	});
 
 module.exports = command;

@@ -1,6 +1,7 @@
 const SlashCommand = require("../../lib/SlashCommand");
 const { EmbedBuilder } = require("discord.js");
 const { shuffleQueue } = require("../../util/player");
+const { deleteMessageDelay } = require("../../util/message");
 
 const command = new SlashCommand()
 	.setName("shuffle")
@@ -21,6 +22,7 @@ const command = new SlashCommand()
 						.setColor("Red")
 						.setDescription("Lavalink node is not connected"),
 				],
+				ephemeral: true,
 			});
 		}
 
@@ -36,21 +38,22 @@ const command = new SlashCommand()
 		}
 
 		if (!player.queue || !player.queue.length || player.queue.length === 0) {
-			return interaction.reply({
+			const ret = interaction.reply({
 				embeds: [
 					new EmbedBuilder()
 						.setColor("Red")
 						.setDescription(
-							"There are not enough songs in the queue."
+							"❌ | There are not enough songs in the queue."
 						),
 				],
-				ephemeral: true,
 			});
+			deleteMessageDelay(ret);
+			return ret;
 		}
 
 		//  if the queue is not empty, shuffle the entire queue
 		shuffleQueue(player);
-		return interaction.reply({
+		const ret = interaction.reply({
 			embeds: [
 				new EmbedBuilder()
 					.setColor(client.config.embedColor)
@@ -59,6 +62,8 @@ const command = new SlashCommand()
 					),
 			],
 		});
+		deleteMessageDelay(ret);
+		return ret;
 	});
 
 module.exports = command;
