@@ -45,6 +45,7 @@
 		"moment-duration-format": "^2.3.2",
 		"pretty-ms": "^7.0.1",
 		"prisma": "^5.9.1",
+		"puppeteer": "^24.1.1",
 		"rlyrics": "^2.0.1",
 		"shoukaku": "^3.4.2",
 		"songcard": "^1.0.8",
