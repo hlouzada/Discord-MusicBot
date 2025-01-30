@@ -1,4 +1,6 @@
 const { ActivityType } = require("discord.js");
+const fs = require('fs').promises;
+const path = require('path');
 const axios = require('axios');
 const puppeteer = require('puppeteer');
 const crypto = require('crypto');
@@ -6,10 +8,10 @@ const UserAgent = require('fake-useragent');
 
 let idleInterval = null;
 
-/**
- * Helper function to fetch JSON from a given URL
- * using the required Hanime headers.
- */
+// Path to the cache file (adjust the directory as needed)
+const CACHE_FILE_PATH = path.join(__dirname, 'hanimeTrending.cache');
+
+// Helper function to fetch data with custom headers
 async function fetchHeaders(url) {
   try {
     const headers = {
@@ -26,24 +28,58 @@ async function fetchHeaders(url) {
 
 /**
  * Fetches a random Hanime trending title.
- * Defaults to trending of 'week' at page 0.
+ * Caches the result once a day, and will only update if the cache is older than 24 hours.
  *
  * @returns {Promise<string|null>} A random trending hentai title or null if none found.
  */
 async function getRandomHanimeTrending() {
+  const now = Date.now();
+  const ONE_DAY = 24 * 60 * 60 * 1000;
+
+  // 1. Attempt to read the cache file.
+  let cacheData;
+  try {
+    const fileData = await fs.readFile(CACHE_FILE_PATH, 'utf8');
+    cacheData = JSON.parse(fileData);
+  } catch (err) {
+    // It's okay if the file doesn't exist or can't be parsed — we'll fetch fresh data below.
+  }
+
+  // 2. Check if we have valid cache (exists and is under 24 hours old)
+  if (cacheData && cacheData.timestamp && (now - cacheData.timestamp < ONE_DAY)) {
+    // Cache is fresh, pick a random title from the cached data
+    const { hentai_videos } = cacheData;
+    if (!hentai_videos || !hentai_videos.length) {
+      console.log('No hentai found in cached data.');
+      return null;
+    }
+    const randomIndex = Math.floor(Math.random() * hentai_videos.length);
+    return hentai_videos[randomIndex].name;
+  }
+
+  // 3. Otherwise, fetch fresh data
   const trendingUrl = 'https://h.freeanimehentai.net/rapi/v7/browse-trending?time=week&page=0';
   const data = await fetchHeaders(trendingUrl);
-  if (!data || !data.hentai_videos) return null;
-
-  const trendingList = data.hentai_videos;
-
-  if (!trendingList.length) {
+  if (!data || !data.hentai_videos || !data.hentai_videos.length) {
     console.log('No hentai found in trending.');
     return null;
   }
 
-  const randomIndex = Math.floor(Math.random() * trendingList.length);
-  return trendingList[randomIndex].name;
+  // 4. Store new data in the cache file (with timestamp)
+  const newCache = {
+    timestamp: now,
+    hentai_videos: data.hentai_videos
+  };
+
+  try {
+    await fs.writeFile(CACHE_FILE_PATH, JSON.stringify(newCache, null, 2), 'utf8');
+  } catch (writeErr) {
+    console.error('Failed to write cache file:', writeErr);
+  }
+
+  // 5. Pick a random title and return it
+  const randomIndex = Math.floor(Math.random() * data.hentai_videos.length);
+  return data.hentai_videos[randomIndex].name;
 }
 
 /**
