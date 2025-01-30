@@ -11,7 +11,7 @@ const {
 } = require("../util/controlChannel");
 const { trackStartedEmbed } = require("../util/embeds");
 const { getAutoLeaveTimeout } = require("../util/musicManager");
-const { setActivityIdle } = require("../util/status");
+const { setActivityIdle, setActivityListening } = require("../util/status");
 
 // entries in this map should be removed when bot disconnected from vc
 const progressUpdater = new Map();
@@ -181,10 +181,7 @@ function handleTrackStart({ player, track }) {
 
 	updateProgress({ player, track });
 
-	client.user.setActivity({
-		name: track.title,
-		type: ActivityType.Listening,
-	});
+	setActivityListening(client, track.title);
 
 	client.warn(
 		`Player: ${player.guild} | Track has started playing [${colors.blue(track.title)}]`
@@ -196,10 +193,7 @@ function handlePause({ player, state }) {
 
 	const client = getClient();
 
-	client.user.setActivity({
-		name: "Nothing",
-		type: ActivityType.Listening,
-	});
+	setActivityListening(client, "Nothing");
 }
 
 module.exports = {

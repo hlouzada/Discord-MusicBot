@@ -3,6 +3,7 @@ const { ActivityType } = require("discord.js");
 const axios = require('axios');
 const puppeteer = require('puppeteer');
 
+let idleInterval = null;
 
 /**
  * Fetches a random hentai anime that started airing (or was released)
@@ -81,9 +82,9 @@ async function getRandomHentaiSteamPromo() {
 function setActivityWatching(client) {
   getRandomHentaiReleasedThisWeek().then((animeTitle) => {
     if (animeTitle) {
-      client.user.setActivity({ name: animeTitle, type: ActivityType.WATCHING });
+      client.user.setActivity({ name: animeTitle, type: ActivityType.Watching });
     } else {
-      client.user.setActivity({ name: 'Hentai', type: ActivityType.WATCHING });
+      client.user.setActivity({ name: 'Hentai', type: ActivityType.Watching });
     }
   });
 }
@@ -91,7 +92,7 @@ function setActivityWatching(client) {
 function setActivityPlaying(client) {
   getRandomHentaiSteamPromo().then((gameTitle) => {
     if (gameTitle) {
-      client.user.setActivity({ name: gameTitle, type: ActivityType.PLAYING });
+      client.user.setActivity({ name: gameTitle, type: ActivityType.Playing });
     } else {
       setActivityWatching(client);
     }
@@ -99,11 +100,30 @@ function setActivityPlaying(client) {
 }
 
 function setActivityIdle(client) {
-  if (Math.floor(Math.random() * 2)) {
-    setActivityPlaying(client);
-  } else {
-    setActivityWatching(client);
-  }
+  if (idleInterval)
+    clearInterval(idleInterval);
+
+  const selectRandom = () => {
+    if (Math.floor(Math.random() * 2)) {
+      setActivityPlaying(client);
+    } else {
+      setActivityWatching(client);
+    }
+  };
+
+  selectRandom();
+
+  idleInterval = setInterval(selectRandom, 1920000);  // 32 minutes
 }
 
-module.exports = { setActivityIdle };
+function setActivityListening(client, track_name) {
+  if (idleInterval)
+    clearInterval(idleInterval);
+  client.user.setActivity({ name: track_name,
+                            type: ActivityType.Listening });
+}
+
+module.exports = {
+  setActivityIdle,
+  setActivityListening
+ };
