@@ -13,16 +13,18 @@ let idleInterval = null;
  */
 async function getRandomHentaiReleasedThisWeek() {
   try {
-    // Calculate the date range (past 14 days)
+    // Calculate the date range (past 30 days)
     const start_date = new Date();
-    start_date.setDate(start_date.getDate() - 14);
+    start_date.setDate(start_date.getDate() - 30);
 
     // Jikan API endpoint that fetches anime by genre.
-    const apiUrl = `https://api.jikan.moe/v4/anime?rating=rx&order_by=popularity&start_date=${start_date.toISOString().slice(0, 10)}`;
 
-    // Fetch the data (by default, this is the first page only)
-    const response = await axios.get(apiUrl);
-    const animeData = response.data.data; // Array of anime objects
+    // Fetch the data
+    let response = await axios.get(`https://api.jikan.moe/v4/anime?rating=rx&order_by=popularity&status=airing&start_date=${start_date.toISOString().slice(0, 10)}`);
+    let animeData = response.data.data; // Array of anime objects
+
+    response = await axios.get(`https://api.jikan.moe/v4/anime?rating=rx&order_by=popularity&status=complete&start_date=${start_date.toISOString().slice(0, 10)}`);
+    animeData = animeData.concat(response.data.data);
 
     if (animeData.length === 0) {
       console.log('No hentai releases found.');
@@ -126,4 +128,4 @@ function setActivityListening(client, track_name) {
 module.exports = {
   setActivityIdle,
   setActivityListening
- };
+};
