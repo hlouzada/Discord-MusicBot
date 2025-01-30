@@ -31,35 +31,20 @@ async function fetchHeaders(url) {
  * @returns {Promise<string|null>} A random trending hentai title or null if none found.
  */
 async function getRandomHanimeTrending() {
-  try {
-    // Get trending list (you can adjust the 'time' or 'page' as needed)
-    const trendingUrl = 'https://h.freeanimehentai.net/rapi/v7/browse-trending?time=week&page=0';
-    const data = await fetchHeaders(trendingUrl);
-    if (!data || !data.hentai_videos) return null;
+  const trendingUrl = 'https://h.freeanimehentai.net/rapi/v7/browse-trending?time=week&page=0';
+  const data = await fetchHeaders(trendingUrl);
+  if (!data || !data.hentai_videos) return null;
 
-    // Return only the data you need
-    const trendingList = data.hentai_videos;
+  const trendingList = data.hentai_videos;
 
-    if (!trendingList.length) {
-      console.log('No hentai found in trending.');
-      return null;
-    }
-
-    const randomIndex = Math.floor(Math.random() * trendingList.length);
-    return trendingList[randomIndex].name; // Return just the name
-  } catch (error) {
-    console.error('Error fetching Hanime trending:', error.message);
+  if (!trendingList.length) {
+    console.log('No hentai found in trending.');
     return null;
   }
-}
 
-/**
- * (Optional) If you want to keep the same function name "getRandomHentaiReleasedThisWeek"
- * so that other parts of your code remain unchanged, simply wrap the new function:
- */
-// async function getRandomHentaiReleasedThisWeek() {
-//   return getRandomHanimeTrending();
-// }
+  const randomIndex = Math.floor(Math.random() * trendingList.length);
+  return trendingList[randomIndex].name;
+}
 
 /**
  * Fetches a random hentai Steam promo game (using Puppeteer).
@@ -113,6 +98,9 @@ function setActivityWatching(client) {
     } else {
       client.user.setActivity({ name: 'Hentai', type: ActivityType.Watching });
     }
+  }).catch((error) => {
+    console.error('Error setting activity:', error.message);
+    client.user.setActivity({ name: 'Hentai', type: ActivityType.Watching });
   });
 }
 
@@ -137,16 +125,9 @@ function setActivityPlaying(client) {
 function setActivityIdle(client) {
   if (idleInterval) clearInterval(idleInterval);
 
-  const selectRandom = () => {
-    if (Math.floor(Math.random() * 2)) {
-      setActivityPlaying(client);
-    } else {
-      setActivityWatching(client);
-    }
-  };
+  setActivityWatching(client);
 
-  selectRandom();
-  idleInterval = setInterval(selectRandom, 1920000);  // 32 minutes
+  idleInterval = setInterval(() => {setActivityWatching(client);}, 1260000);  // 21 minutes
 }
 
 /**
