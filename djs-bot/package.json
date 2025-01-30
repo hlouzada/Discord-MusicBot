@@ -38,6 +38,7 @@
 		"erela.js": "^2.4.0",
 		"erela.js-deezer": "^1.0.7",
 		"express": "^4.18.2",
+		"fake-useragent": "^1.0.1",
 		"fastify": "^4.26.0",
 		"fuzzysort": "^2.0.4",
 		"jsonwebtoken": "^9.0.2",

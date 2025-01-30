@@ -1,46 +1,69 @@
 const { ActivityType } = require("discord.js");
-
 const axios = require('axios');
 const puppeteer = require('puppeteer');
+const crypto = require('crypto');
+const UserAgent = require('fake-useragent');
 
 let idleInterval = null;
 
 /**
- * Fetches a random hentai anime that started airing (or was released)
- * within the past 7 days, using the Jikan (unofficial MAL) API.
- *
- * @returns {Promise<Object|null>} A random hentai anime object or null if none found.
+ * Helper function to fetch JSON from a given URL
+ * using the required Hanime headers.
  */
-async function getRandomHentaiReleasedThisWeek() {
+async function fetchHeaders(url) {
   try {
-    // Calculate the date range (past 30 days)
-    const start_date = new Date();
-    start_date.setDate(start_date.getDate() - 30);
+    const headers = {
+      'X-Signature-Version': 'web2',
+      'X-Signature': crypto.randomBytes(32).toString('hex'),
+      'User-Agent': new UserAgent().random
+    };
+    const res = await axios.get(url, { headers });
+    return res.data;
+  } catch (error) {
+    throw new Error(`Error fetching data: ${error.message}`);
+  }
+}
 
-    // Jikan API endpoint that fetches anime by genre.
+/**
+ * Fetches a random Hanime trending title.
+ * Defaults to trending of 'week' at page 0.
+ *
+ * @returns {Promise<string|null>} A random trending hentai title or null if none found.
+ */
+async function getRandomHanimeTrending() {
+  try {
+    // Get trending list (you can adjust the 'time' or 'page' as needed)
+    const trendingUrl = 'https://h.freeanimehentai.net/rapi/v7/browse-trending?time=week&page=0';
+    const data = await fetchHeaders(trendingUrl);
+    if (!data || !data.hentai_videos) return null;
 
-    // Fetch the data
-    let response = await axios.get(`https://api.jikan.moe/v4/anime?rating=rx&order_by=popularity&status=airing&start_date=${start_date.toISOString().slice(0, 10)}`);
-    let animeData = response.data.data; // Array of anime objects
+    // Return only the data you need
+    const trendingList = data.hentai_videos;
 
-    response = await axios.get(`https://api.jikan.moe/v4/anime?rating=rx&order_by=popularity&status=complete&start_date=${start_date.toISOString().slice(0, 10)}`);
-    animeData = animeData.concat(response.data.data);
-
-    if (animeData.length === 0) {
-      console.log('No hentai releases found.');
+    if (!trendingList.length) {
+      console.log('No hentai found in trending.');
       return null;
     }
 
-    // Pick a random anime from the filtered list
-    const randomIndex = Math.floor(Math.random() * animeData.length);
-    return animeData[randomIndex].title;
+    const randomIndex = Math.floor(Math.random() * trendingList.length);
+    return trendingList[randomIndex].name; // Return just the name
   } catch (error) {
-    console.error('Error fetching hentai releases:', error.message);
+    console.error('Error fetching Hanime trending:', error.message);
     return null;
   }
 }
 
+/**
+ * (Optional) If you want to keep the same function name "getRandomHentaiReleasedThisWeek"
+ * so that other parts of your code remain unchanged, simply wrap the new function:
+ */
+// async function getRandomHentaiReleasedThisWeek() {
+//   return getRandomHanimeTrending();
+// }
 
+/**
+ * Fetches a random hentai Steam promo game (using Puppeteer).
+ */
 async function getRandomHentaiSteamPromo() {
   const url =
     'https://steamdb.info/sales/?displayOnly=Game&min_discount=50&min_rating=60&min_reviews=500&sort=rating_desc&tagid=9130';
@@ -52,7 +75,6 @@ async function getRandomHentaiSteamPromo() {
   await page.goto(url, { waitUntil: 'networkidle2' });
   
   // 3. Wait for at least one row to appear
-  //    Adjust this selector if your table structure changes
   await page.waitForSelector('tr.app');
   
   // 4. Extract titles from each table row
@@ -81,8 +103,11 @@ async function getRandomHentaiSteamPromo() {
   return titles[randomIndex];
 }
 
+/**
+ * Set the bot's activity to "Watching <random trending hentai>".
+ */
 function setActivityWatching(client) {
-  getRandomHentaiReleasedThisWeek().then((animeTitle) => {
+  getRandomHanimeTrending().then((animeTitle) => {
     if (animeTitle) {
       client.user.setActivity({ name: animeTitle, type: ActivityType.Watching });
     } else {
@@ -91,6 +116,10 @@ function setActivityWatching(client) {
   });
 }
 
+/**
+ * Set the bot's activity to "Playing <random hentai Steam promo>".
+ * If none is found, fallback to setActivityWatching.
+ */
 function setActivityPlaying(client) {
   getRandomHentaiSteamPromo().then((gameTitle) => {
     if (gameTitle) {
@@ -101,9 +130,12 @@ function setActivityPlaying(client) {
   });
 }
 
+/**
+ * Randomly choose between Playing a hentai game or Watching a hentai video
+ * every 32 minutes by default.
+ */
 function setActivityIdle(client) {
-  if (idleInterval)
-    clearInterval(idleInterval);
+  if (idleInterval) clearInterval(idleInterval);
 
   const selectRandom = () => {
     if (Math.floor(Math.random() * 2)) {
@@ -114,15 +146,19 @@ function setActivityIdle(client) {
   };
 
   selectRandom();
-
   idleInterval = setInterval(selectRandom, 1920000);  // 32 minutes
 }
 
+/**
+ * Set the bot's activity to "Listening to <track_name>".
+ * Clears the idle interval so it doesn't overwrite the activity.
+ */
 function setActivityListening(client, track_name) {
-  if (idleInterval)
-    clearInterval(idleInterval);
-  client.user.setActivity({ name: track_name,
-                            type: ActivityType.Listening });
+  if (idleInterval) clearInterval(idleInterval);
+  client.user.setActivity({ 
+    name: track_name,
+    type: ActivityType.Listening
+  });
 }
 
 module.exports = {
