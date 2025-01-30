@@ -48,27 +48,28 @@ async function getRandomHanimeTrending() {
   // 2. Check if we have valid cache (exists and is under 24 hours old)
   if (cacheData && cacheData.timestamp && (now - cacheData.timestamp < ONE_DAY)) {
     // Cache is fresh, pick a random title from the cached data
-    const { hentai_videos } = cacheData;
-    if (!hentai_videos || !hentai_videos.length) {
+    const { data } = cacheData;
+    if (!data || !data.length) {
       console.log('No hentai found in cached data.');
       return null;
     }
-    const randomIndex = Math.floor(Math.random() * hentai_videos.length);
-    return hentai_videos[randomIndex].name;
+    const randomIndex = Math.floor(Math.random() * data.length);
+    return data[randomIndex].name;
   }
 
   // 3. Otherwise, fetch fresh data
-  const trendingUrl = 'https://h.freeanimehentai.net/rapi/v7/browse-trending?time=week&page=0';
-  const data = await fetchHeaders(trendingUrl);
-  if (!data || !data.hentai_videos || !data.hentai_videos.length) {
-    console.log('No hentai found in trending.');
-    return null;
+  let data = []
+  for (let page = 0; page < 3; page++) {
+    data = data.concat((await fetchHeaders(`https://h.freeanimehentai.net/rapi/v7/browse-trending?time=week&page=${page}`))?.hentai_videos || []);
+    await new Promise(r => setTimeout(r, 1000 + Math.random() * 3000));  // Delay between requests (1-4 seconds)
   }
+
+  if (!data.length) return null;
 
   // 4. Store new data in the cache file (with timestamp)
   const newCache = {
     timestamp: now,
-    hentai_videos: data.hentai_videos
+    data: data
   };
 
   try {
@@ -78,8 +79,8 @@ async function getRandomHanimeTrending() {
   }
 
   // 5. Pick a random title and return it
-  const randomIndex = Math.floor(Math.random() * data.hentai_videos.length);
-  return data.hentai_videos[randomIndex].name;
+  const randomIndex = Math.floor(Math.random() * data.length);
+  return data[randomIndex].name;
 }
 
 /**
