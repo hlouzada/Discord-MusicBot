@@ -10,19 +10,12 @@ let idleInterval = null;
 // Path to the cache file (adjust the directory as needed)
 const CACHE_FILE_PATH = path.join(__dirname, 'hanimeTrending.cache');
 
-async function getHeaders() {
+async function getSignature() {
   const browser = await chromium.launch({ headless: true });
-  // fake-useragent exports a function that returns a UA string. Call it
   const context = await browser.newContext({
     viewport: { width: 1280, height: 800 },
     userAgent: UserAgent(),
-    extraHTTPHeaders: {
-      'sec-ch-ua': '"Chromium";v="116", "Google Chrome";v="116", "Not A;Brand";v="99"',
-      'sec-ch-ua-mobile': '?0',
-      'sec-ch-ua-platform': '"Windows"'
-    }
   });
-
   const page = await context.newPage();
 
   try {
@@ -31,7 +24,14 @@ async function getHeaders() {
     // Wait a bit more for background requests that may be triggered after initial load
     const request = await page.waitForRequest(/rapi\/v7\/browse-trending|freeanimehentai\.net|rapi\/v7/i, { timeout: 15000 });
 
-    return request.headers();
+    const headers = request.headers();
+    return {
+      'x-signature': headers['x-signature'],
+      'x-time': headers['x-time'],
+      'x-user-license': headers['x-user-license'],
+      'x-session-token': headers['x-session-token'],
+      'x-signature-version': headers['x-signature-version'],
+    }
 
   } catch (err) {
     console.error('Error during capture:', err && err.message ? err.message : err);
@@ -43,7 +43,11 @@ async function getHeaders() {
 // Helper function to fetch data with custom headers
 async function fetchTrending(page) {
   const url = `https://h.freeanimehentai.net/rapi/v7/browse-trending?time=week&page=${page}`;
-  const headers = await getHeaders();
+  const headers = {
+    ...await getSignature(),
+    'Origin': 'https://hanime.tv',
+    'Referer': 'https://hanime.tv/',
+  };
   try {
     const res = await axios.get(url, { headers });
     return res.data.hentai_videos || [];
@@ -149,5 +153,6 @@ function setActivityListening(client, track_name) {
 
 module.exports = {
   setActivityIdle,
-  setActivityListening
+  setActivityListening,
+  fetchTrending
 };

@@ -8,12 +8,12 @@
 		"deploy": "npm run api-build && node scripts/global",
 		"destroy": "node scripts/destroy",
 		"update": "node scripts/update",
-		"bot": "npm run api-build && npm run install-chromium && node index.js",
+		"bot": "npm run api-build && npm run install-playwright && node index.js",
 		"start": "npm ci && npm run bot",
 		"db-start": "npm ci && node scripts/DBScript.js && npm run bot",
 		"api-build": "tsc -p api/v1/tsconfig.json",
 		"api-start": "node api/v1/dist/standalone.js",
-		"install-chromium": "npx playwright install chromium"
+		"install-playwright": "npx playwright install-deps && npx playwright install chromium"
 	},
 	"keywords": [
 		"music",
