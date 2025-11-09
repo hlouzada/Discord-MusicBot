@@ -54,6 +54,8 @@ services:
     image: fredboat/lavalink:3
     restart: unless-stopped
     hostname: docker.lavalink
+    environment:
+      - PLUGINS_YOUTUBE_OAUTH_REFRESHTOKEN=${PLUGINS_YOUTUBE_OAUTH_REFRESHTOKEN}
     volumes:
       - ./lavalink/application.yml:/opt/Lavalink/application.yml
       # - ./lavalink/plugins/:/opt/Lavalink/plugins
