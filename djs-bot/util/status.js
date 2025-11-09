@@ -11,15 +11,17 @@ let idleInterval = null;
 const CACHE_FILE_PATH = path.join(__dirname, 'hanimeTrending.cache');
 
 // Helper function to fetch data with custom headers
-async function fetchHeaders(url) {
+async function fetchTrending(page) {
+  const url = `https://h.freeanimehentai.net/rapi/v7/browse-trending?time=week&page=${page}`;
+  const headers = {
+    'X-Signature-Version': 'web2',
+    'X-Signature': crypto.randomBytes(32).toString('hex'),
+    'User-Agent': new UserAgent().random,
+    'Origin': 'https://hanime.tv',
+  };
   try {
-    const headers = {
-      'X-Signature-Version': 'web2',
-      'X-Signature': crypto.randomBytes(32).toString('hex'),
-      'User-Agent': new UserAgent().random
-    };
     const res = await axios.get(url, { headers });
-    return res.data;
+    return res.data.hentai_videos || [];
   } catch (error) {
     throw new Error(`Error fetching data: ${error.message}`);
   }
@@ -33,7 +35,7 @@ async function fetchHeaders(url) {
  */
 async function getRandomHanimeTrending() {
   const now = Date.now();
-  const ONE_DAY = 24 * 60 * 60 * 1000;
+  const ONE_DAY = (24 + 2 * Math.random()) * 3600 * 1000; // 24 hours + random 0-2 hours
 
   // 1. Attempt to read the cache file.
   let cacheData;
@@ -48,18 +50,16 @@ async function getRandomHanimeTrending() {
   if (cacheData && cacheData.timestamp && (now - cacheData.timestamp < ONE_DAY)) {
     // Cache is fresh, pick a random title from the cached data
     const { data } = cacheData;
-    if (!data || !data.length) {
-      console.log('No hentai found in cached data.');
-      return null;
+    if (data && data.length) {
+      const randomIndex = Math.floor(Math.random() * data.length);
+      return data[randomIndex].name;
     }
-    const randomIndex = Math.floor(Math.random() * data.length);
-    return data[randomIndex].name;
   }
 
   // 3. Otherwise, fetch fresh data
   let data = []
   for (let page = 0; page < 3; page++) {
-    data = data.concat((await fetchHeaders(`https://h.freeanimehentai.net/rapi/v7/browse-trending?time=week&page=${page}`))?.hentai_videos || []);
+    data = data.concat(await fetchTrending(page));
     await new Promise(r => setTimeout(r, 1000 + Math.random() * 3000));  // Delay between requests (1-4 seconds)
   }
 
