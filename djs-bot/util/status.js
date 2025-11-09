@@ -2,23 +2,48 @@ const { ActivityType } = require("discord.js");
 const fs = require('fs').promises;
 const path = require('path');
 const axios = require('axios');
-const crypto = require('crypto');
 const UserAgent = require('fake-useragent');
+const { chromium } = require('playwright');
 
 let idleInterval = null;
 
 // Path to the cache file (adjust the directory as needed)
 const CACHE_FILE_PATH = path.join(__dirname, 'hanimeTrending.cache');
 
+async function getHeaders() {
+  const browser = await chromium.launch({ headless: true });
+  // fake-useragent exports a function that returns a UA string. Call it
+  const context = await browser.newContext({
+    viewport: { width: 1280, height: 800 },
+    userAgent: UserAgent(),
+    extraHTTPHeaders: {
+      'sec-ch-ua': '"Chromium";v="116", "Google Chrome";v="116", "Not A;Brand";v="99"',
+      'sec-ch-ua-mobile': '?0',
+      'sec-ch-ua-platform': '"Windows"'
+    }
+  });
+
+  const page = await context.newPage();
+
+  try {
+    await page.goto('https://hanime.tv/browse', { timeout: 30000 });
+
+    // Wait a bit more for background requests that may be triggered after initial load
+    const request = await page.waitForRequest(/rapi\/v7\/browse-trending|freeanimehentai\.net|rapi\/v7/i, { timeout: 15000 });
+
+    return request.headers();
+
+  } catch (err) {
+    console.error('Error during capture:', err && err.message ? err.message : err);
+  } finally {
+    await browser.close();
+  }
+}
+
 // Helper function to fetch data with custom headers
 async function fetchTrending(page) {
   const url = `https://h.freeanimehentai.net/rapi/v7/browse-trending?time=week&page=${page}`;
-  const headers = {
-    'X-Signature-Version': 'web2',
-    'X-Signature': crypto.randomBytes(32).toString('hex'),
-    'User-Agent': new UserAgent().random,
-    'Origin': 'https://hanime.tv',
-  };
+  const headers = await getHeaders();
   try {
     const res = await axios.get(url, { headers });
     return res.data.hentai_videos || [];
