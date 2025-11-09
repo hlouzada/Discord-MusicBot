@@ -4,6 +4,10 @@ server: # REST and WS server
 plugins:
   youtube:
     enabled: true # Whether this source can be used.
+    remoteCipher:
+      url: "http://docker.yt-cipher:8001" # The base URL of your remote cipher server.
+      password: "test" # The password to authenticate with your remote cipher server.
+      # userAgent: "your_service_name" # Optional user-agent header, used for metrics on the backend.
     allowSearch: true # Whether "ytsearch:" and "ytmsearch:" can be used.
     allowDirectVideoIds: true # Whether just video IDs can match. If false, only complete URLs will be loaded.
     allowDirectPlaylistIds: true # Whether just playlist IDs can match. If false, only complete URLs will be loaded.
@@ -25,7 +29,7 @@ plugins:
       # refreshToken: "your-refresh-token-here"
 lavalink:
   plugins:
-    - dependency: "dev.lavalink.youtube:youtube-plugin:1.11.3"
+    - dependency: "dev.lavalink.youtube:youtube-plugin:1.16.0"
       repository: "https://maven.lavalink.dev/releases"
   pluginsDir: "./plugins"
   server:
