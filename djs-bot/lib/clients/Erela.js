@@ -15,6 +15,7 @@ const { handleTrackStart } = require("../MusicEvents");
 const { pause } = require("../../util/player");
 const { setDefaultPlayerConfig } = require("../../util/musicManager");
 const { deleteMessageDelay } = require("../../util/message");
+const { setActivityIdle } = require("../../util/status");
 
 Structure.extend(
 	"Player",
@@ -306,6 +307,8 @@ module.exports = (client) => {
 				player.play(res.tracks[nextTrackIndex]);
 				player.queue.previous = track;
 			} else {
+				setActivityIdle(client);
+
 				const twentyFourSeven = player.get("twentyFourSeven");
 
 				let queueEmbed = new EmbedBuilder()
